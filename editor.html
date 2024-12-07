@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #main {
+            width:50%;
+            margin:auto;
+        }
+        h1 {
+            margin:auto;
+            text-align:center;
+        }
+        .entry {
+            border: 1px solid #ccc;
+            margin:auto;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            width:80%;
+        }
+        .entry input {
+            width: calc(100% - 20px);
+            margin-bottom: 5px;
+        }
+        .actions button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <h1>Flashcard Editor</h1>
+        <input type="file" id="fileInput" accept="application/json" onchange="loadJSON(event)" style="margin-bottom: 20px;">
+        <div id="entries"></div>
+        <button onclick="addEntry()">Add Entry</button>
+        <hr/>
+        <button onclick="saveJSONToTextArea()">Save</button>
+        <button onclick="downloadJSON()">Download</button>
+
+        <p>If it doesn't download for some reason, save this text to a text file.</p>
+        <textarea id="output" rows="10" style="width: 100%; margin-top: 20px;"></textarea>
+    </div>
+    <script>
+        let data = [
+            { "question": "Capital of France", "answer": "Paris" },
+            { "question": "Largest ocean", "answer": "Pacific" },
+            { "question": "Fastest land animal", "answer": "Cheetah" }
+        ];
+
+        function renderEntries() {
+            const entriesDiv = document.getElementById('entries');
+            entriesDiv.innerHTML = '';
+            data.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+                entryDiv.innerHTML = "<p>" + (index+1) + "</p>";
+
+                const questionInput = document.createElement('input');
+                questionInput.type = 'text';
+                questionInput.value = entry.question;
+                questionInput.placeholder = 'Question';
+                questionInput.oninput = (e) => updateEntry(index, 'question', e.target.value);
+
+                const answerInput = document.createElement('input');
+                answerInput.type = 'text';
+                answerInput.value = entry.answer;
+                answerInput.placeholder = 'Answer';
+                answerInput.oninput = (e) => updateEntry(index, 'answer', e.target.value);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteEntry(index);
+
+                entryDiv.appendChild(questionInput);
+                entryDiv.appendChild(answerInput);
+                entryDiv.appendChild(deleteButton);
+                entriesDiv.appendChild(entryDiv);
+            });
+        }
+
+        function updateEntry(index, field, value) {
+            data[index][field] = value;
+        }
+
+        function addEntry() {
+            data.push({ question: '', answer: '' });
+            renderEntries();
+        }
+
+        function deleteEntry(index) {
+            data.splice(index, 1);
+            renderEntries();
+        }
+
+        function saveJSONToTextArea() {
+            const output = document.getElementById('output');
+            output.value = JSON.stringify(data, null, 4);
+        }
+
+        /*function downloadJSON() {
+            const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'data.json';
+            link.click();
+        }*/
+
+        async function downloadJSON() {
+            if (window.showSaveFilePicker) {
+                try {
+                    const options = {
+                        types: [
+                            {
+                                description: 'JSON File',
+                                accept: { 'application/json': ['.json'] },
+                            },
+                        ],
+                    };
+                    const fileHandle = await showSaveFilePicker(options);
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(data, null, 4));
+                    await writable.close();
+                } 
+                catch (error) {
+                    console.error('Save file aborted or failed:', error);
+                }
+            } 
+            else {
+                // Fallback for older browsers
+                const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'data.json';
+                link.click();
+                }
+            }
+
+
+        function loadJSON(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        data = JSON.parse(e.target.result);
+                        renderEntries();
+                    } catch (error) {
+                        alert('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Initial render
+        renderEntries();
+    </script>
+</body>
+</html>
