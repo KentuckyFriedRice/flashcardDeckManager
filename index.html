@@ -8,22 +8,24 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-image:url("https://th.bing.com/th/id/OIP.0Uv8GRgvIAntSDbko-V28gHaE8?rs=1&pid=ImgDetMain");
+	        background-repeat: repeat;
         }
         #main {
-            width:50%;
-            margin:auto;
+            width: 50%;
+            margin: auto;
         }
         h1 {
-            margin:auto;
-            text-align:center;
+            text-align: center;
         }
         .entry {
             border: 1px solid #ccc;
+            background-color: white;
+            width:500px;
             margin:auto;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
-            width:80%;
         }
         .entry input {
             width: calc(100% - 20px);
@@ -41,13 +43,17 @@
         <div id="entries"></div>
         <button onclick="addEntry()">Add Entry</button>
         <hr/>
-        <button onclick="saveJSONToTextArea()">Save</button>
+        <input type="text" id="inputFileName" name="inputFileName" value="Type File Name Here"><br><br>
+        <button onclick="saveJSONToTextArea()">Generate</button>
         <button onclick="downloadJSON()">Download</button>
+        <button onclick="splitAndDownload()">Split and Download as ZIP</button>
 
-        <p>If it doesn't download for some reason, save this text to a text file.</p>
+        <p>If it doesn't download for some reason, generate and paste this text to notepad and save as a .json file.</p>
         <textarea id="output" rows="10" style="width: 100%; margin-top: 20px;"></textarea>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
     <script>
+        let file_name = "file";
         let data = [
             { "question": "Capital of France", "answer": "Paris" },
             { "question": "Largest ocean", "answer": "Pacific" },
@@ -104,44 +110,13 @@
             output.value = JSON.stringify(data, null, 4);
         }
 
-        /*function downloadJSON() {
+        async function downloadJSON() {
             const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'data.json';
+            link.download = file_name+'.json';
             link.click();
-        }*/
-
-        async function downloadJSON() {
-            if (window.showSaveFilePicker) {
-                try {
-                    const options = {
-                        types: [
-                            {
-                                description: 'JSON File',
-                                accept: { 'application/json': ['.json'] },
-                            },
-                        ],
-                    };
-                    const fileHandle = await showSaveFilePicker(options);
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(JSON.stringify(data, null, 4));
-                    await writable.close();
-                } 
-                catch (error) {
-                    console.error('Save file aborted or failed:', error);
-                }
-            } 
-            else {
-                // Fallback for older browsers
-                const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'data.json';
-                link.click();
-                }
-            }
-
+        }
 
         function loadJSON(event) {
             const file = event.target.files[0];
@@ -150,6 +125,8 @@
                 reader.onload = (e) => {
                     try {
                         data = JSON.parse(e.target.result);
+                        file_name=(file.name).split('.')[0];
+                        document.getElementById('inputFileName').value=file_name;
                         renderEntries();
                     } catch (error) {
                         alert('Invalid JSON file');
@@ -157,6 +134,27 @@
                 };
                 reader.readAsText(file);
             }
+        }
+
+        async function splitAndDownload() {
+            const zip = new JSZip();
+            const chunkSize = 10;
+            let chunkIndex = 1;
+
+            file_name=document.getElementById('inputFileName').value;
+
+            for (let i = 0; i < data.length; i += chunkSize) {
+                const chunk = data.slice(i, i + chunkSize);
+                const fileName = file_name+'_'+chunkIndex+'.json';
+                zip.file(fileName, JSON.stringify(chunk, null, 4));
+                chunkIndex++;
+            }
+
+            const content = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = file_name+'_collection.zip';
+            link.click();
         }
 
         // Initial render
