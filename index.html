@@ -12,9 +12,7 @@
 	        background-repeat: repeat;
         }
         #main {
-	    background-color:white;
             width: 50%;
-	    padding: 10px;
             margin: auto;
         }
         h1 {
@@ -113,6 +111,7 @@
         }
 
         async function downloadJSON() {
+            file_name=document.getElementById('inputFileName').value;
             const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
