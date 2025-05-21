@@ -1,25 +1,51 @@
 <form id="registerForm">
-  <input type="text" name="username" placeholder="Username" required>
-  <input type="password" name="password" placeholder="Password" required>
+  <label>
+    Username:
+    <input type="text" name="username" required>
+  </label>
+  <br>
+  <label>
+    Password:
+    <input type="password" name="password" required>
+  </label>
+  <br>
+  <label>
+    Email:
+    <input type="email" name="email">
+  </label>
+  <br>
+  <label>
+    Are you a teacher?
+    <input type="checkbox" name="is_teacher">
+  </label>
+  <br>
   <button type="submit">Register</button>
 </form>
 
 <script>
 document.getElementById("registerForm").addEventListener("submit", async function(e) {
   e.preventDefault();
+
   const form = e.target;
+
   const data = {
     username: form.username.value,
-    password: form.password.value
+    password: form.password.value,
+    email: form.email.value || null,
+    is_teacher: form.is_teacher.checked ? 1 : 0
   };
 
-  const res = await fetch("http://YOUR-EC2-IP:5000/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
+  try {
+    const res = await fetch("http://YOUR-EC2-IP:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-  const result = await res.json();
-  alert(result.message || result.error);
+    const result = await res.json();
+    alert(result.message || result.error);
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
 });
 </script>
