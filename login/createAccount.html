@@ -18,6 +18,10 @@
     Are you a teacher?
     <input type="checkbox" name="is_teacher">
   </label>
+  <label>
+    Code:
+    <input type="password" name="code" required>
+  </label>
   <br>
   <button type="submit">Register</button>
 </form>
@@ -32,7 +36,8 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     username: form.username.value,
     password: form.password.value,
     email: form.email.value || null,
-    is_teacher: form.is_teacher.checked ? 1 : 0
+    is_teacher: form.is_teacher.checked ? 1 : 0,
+    code: form.code.value
   };
 
   try {
