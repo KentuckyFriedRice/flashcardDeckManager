@@ -41,7 +41,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   };
 
   try {
-    const res = await fetch("https://api.ttrice.me:443/register", {
+    const res = await fetch("https://api.ttrice.me/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
