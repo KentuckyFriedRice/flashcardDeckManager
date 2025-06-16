@@ -72,13 +72,13 @@
                 questionInput.type = 'text';
                 questionInput.value = entry.question;
                 questionInput.placeholder = 'Question';
-                questionInput.oninput = (e) => updateEntry(index, 'question', e.target.value);
+                questionInput.oninput = (e) => updateEntry(index, 'question', e.target.value.trim());
 
                 const answerInput = document.createElement('input');
                 answerInput.type = 'text';
                 answerInput.value = entry.answer;
                 answerInput.placeholder = 'Answer';
-                answerInput.oninput = (e) => updateEntry(index, 'answer', e.target.value);
+                answerInput.oninput = (e) => updateEntry(index, 'answer', e.target.value.trim());
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
